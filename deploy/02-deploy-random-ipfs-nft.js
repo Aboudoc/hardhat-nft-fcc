@@ -1,11 +1,20 @@
 const { developmentChains, networkConfig } = require("../helper-hardhat-config")
 const { network, ethers } = require("hardhat")
 const { verify } = require("../utils/verify")
+const { storeImages } = require("../utils/uploadToPinata")
+
+const imagesLocation = "images/randomNFT"
 
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
+    let tokenUris
+
+    // get the IPFS hashes of our images
+    if (process.env.UPLOAD_TO_PINATA == "true") {
+        tokenUris = await handleTokenUris()
+    }
 
     let vrfCoordinatorAddress, subscriptionId
 
@@ -21,12 +30,23 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     }
 
     log("-----------------------------------")
-    const args = [
-        vrfCoordinatorAddress,
-        subscriptionId,
-        networkConfig[chainId].gasLane,
-        networkConfig[chainId].callbackGasLimit,
-        // tokenUris
-        networkConfig[chainId].mintFee,
-    ]
+    await storeImages(imagesLocation)
+    // const args = [
+    //     vrfCoordinatorAddress,
+    //     subscriptionId,
+    //     networkConfig[chainId].gasLane,
+    //     networkConfig[chainId].callbackGasLimit,
+    //     // tokenUris
+    //     networkConfig[chainId].mintFee,
+    // ]
 }
+
+async function handleTokenUris() {
+    tokenUris = []
+    // Store the image in IPFS
+    // Store the metadata in IPFS
+
+    return tokenUris
+}
+
+module.exports.tags = ["all", "randomipfs", "main"]
