@@ -70,7 +70,7 @@ async function handleTokenUris() {
         console.log(`Uploading ${tokenUriMetadata.name}...`)
         // store the JSON to pinata / IPFS
         const metadataUploadResponse = await storeTokenUriMetadata(tokenUriMetadata)
-        tokenUris.push(`ipfs://${metadataUploadResponse}`)
+        tokenUris.push(`ipfs://${metadataUploadResponse.IpfsHash}`)
     }
     console.log("Token URIs Uploaded! they are: ")
     console.log(tokenUris)
