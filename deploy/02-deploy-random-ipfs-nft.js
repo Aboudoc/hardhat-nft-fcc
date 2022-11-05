@@ -42,16 +42,28 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     }
 
     log("-----------------------------------")
-    // await storeImages(imagesLocation)
-    // pin in your own node as well
-    // const args = [
-    //     vrfCoordinatorAddress,
-    //     subscriptionId,
-    //     networkConfig[chainId].gasLane,
-    //     networkConfig[chainId].callbackGasLimit,
-    //     // tokenUris
-    //     networkConfig[chainId].mintFee,
-    // ]
+    await storeImages(imagesLocation)
+    //pin in your own node as well
+    const args = [
+        vrfCoordinatorAddress,
+        subscriptionId,
+        networkConfig[chainId].gasLane,
+        networkConfig[chainId].callbackGasLimit,
+        tokenUris,
+        networkConfig[chainId].mintFee,
+    ]
+
+    const randomIpfsNFT = await deploy("RandomIpfsNft", {
+        from: deployer,
+        args: args,
+        log: true,
+        waitConfirmations: network.config.blockConfirmations || 1,
+    })
+    log("-------------------------------------")
+    if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
+        log("Verifying...")
+        await verify(randomIpfsNFT.address, args)
+    }
 }
 
 async function handleTokenUris() {

@@ -9,13 +9,15 @@ const networkConfig = {
         subscriptionId: "5304",
         callbackGasLimit: "500000",
         interval: "30",
+        mintFee: "10000000000000000", //0.01
     },
     31337: {
         name: "hardhat",
         entranceFee: ethers.utils.parseEther("0.1"),
         gasLane: "0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15",
-        callbackGasLimit: "300000",
+        callbackGasLimit: "300000", //300,000 gas
         interval: "30",
+        mintFee: "10000000000000000", //0.01
     },
 }
 
