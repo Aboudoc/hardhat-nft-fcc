@@ -1,9 +1,21 @@
 const { developmentChains, networkConfig } = require("../helper-hardhat-config")
 const { network, ethers } = require("hardhat")
 const { verify } = require("../utils/verify")
-const { storeImages } = require("../utils/uploadToPinata")
+const { storeImages, storeTokenUriMetadata } = require("../utils/uploadToPinata")
 
 const imagesLocation = "images/randomNFT"
+
+const metadataTemplate = {
+    name: "",
+    description: "",
+    image: "",
+    attributes: [
+        {
+            trait_type: "Cuteness",
+            value: 100,
+        },
+    ],
+}
 
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
@@ -30,7 +42,8 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     }
 
     log("-----------------------------------")
-    await storeImages(imagesLocation)
+    // await storeImages(imagesLocation)
+    // pin in your own node as well
     // const args = [
     //     vrfCoordinatorAddress,
     //     subscriptionId,
@@ -45,7 +58,22 @@ async function handleTokenUris() {
     tokenUris = []
     // Store the image in IPFS
     // Store the metadata in IPFS
+    const { responses: imageUploadResponses, files } = await storeImages(imagesLocation)
 
+    for (imageUploadResponseIndex in imageUploadResponses) {
+        // create metadata
+        // upload metadata
+        let tokenUriMetadata = { ...metadataTemplate }
+        tokenUriMetadata.name = files[imageUploadResponseIndex].replace(".png", "")
+        tokenUriMetadata.description = `An adorable ${tokenUriMetadata.name} pup!`
+        tokenUriMetadata.image = `ipfs://${imageUploadResponses[imageUploadResponseIndex].IpfsHash}`
+        console.log(`Uploading ${tokenUriMetadata.name}...`)
+        // store the JSON to pinata / IPFS
+        const metadataUploadResponse = await storeTokenUriMetadata(tokenUriMetadata)
+        tokenUris.push(`ipfs://${metadataUploadResponse}`)
+    }
+    console.log("Token URIs Uploaded! they are: ")
+    console.log(tokenUris)
     return tokenUris
 }
 
