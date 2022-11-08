@@ -21,7 +21,12 @@ describe("randomIpfsNft", function () {
                 "RandomIpfsNft__NeedMoreETHSent"
             )
         })
-        it("reverse if the payment is less than mint fee", async function () {})
+        it("reverse if the payment is less than mint fee", async function () {
+            const mintFee = await randomIpfsNft.getMintFee()
+            await expect(randomIpfsNft.requestNft({ value: mintFee.div(2) })).to.be.revertedWith(
+                "RandomIpfsNft__NeedMoreETHSent"
+            )
+        })
 
         it("emits an event and kicks off a random word request", async function () {
             const fee = await randomIpfsNft.getMintFee()
