@@ -5,6 +5,7 @@ const { storeImages, storeTokenUriMetadata } = require("../utils/uploadToPinata"
 
 const imagesLocation = "images/randomNFT"
 
+// ==> add the different stats for our NFTs in the attribute section
 const metadataTemplate = {
     name: "",
     description: "",
@@ -56,7 +57,9 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         subscriptionId,
         networkConfig[chainId].gasLane,
         networkConfig[chainId].callbackGasLimit,
-        tokenUris,
+        tokenUris, // ==>
+        // All we need is to get the IPFS hashes of our images
+        // We'll create handleTokenUris function that's gonna upload our code to pinata
         networkConfig[chainId].mintFee,
     ]
 
@@ -80,6 +83,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
 async function handleTokenUris() {
     tokenUris = []
+    // ==> We need to do two things:
     // Store the image in IPFS
     // Store the metadata in IPFS
     const { responses: imageUploadResponses, files } = await storeImages(imagesLocation)
