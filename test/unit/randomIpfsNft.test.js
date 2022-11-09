@@ -1,5 +1,5 @@
 const { expect, assert } = require("chai")
-const { getNamedAccounts, deployments, ethers } = require("hardhat")
+const { getNamedAccounts, deployments, ethers, network } = require("hardhat")
 
 describe("randomIpfsNft", function () {
     let deployer, randomIpfsNft, vrfCoordinatorV2Mock
@@ -13,6 +13,12 @@ describe("randomIpfsNft", function () {
         it("Sets starting values correctly", async function () {
             const mintFee = await randomIpfsNft.getMintFee()
             assert.equal(mintFee)
+        })
+    })
+    describe("constructor", () => {
+        it("sets starting values correctly", async function () {
+            const dogTokenUriZero = await randomIpfsNft.getDogTokenUris(0)
+            assert(dogTokenUriZero.includes("ipfs://"))
         })
     })
     describe("requestNft", function () {
@@ -33,6 +39,57 @@ describe("randomIpfsNft", function () {
             await expect(randomIpfsNft.requestNft({ value: fee.toString() })).to.emit(
                 randomIpfsNft,
                 "NftRequested"
+            )
+        })
+    })
+    describe("fulfillRandomWords", () => {
+        it("mints NFT after random number is returned", async function () {
+            await new Promise(async (resolve, reject) => {
+                randomIpfsNft.once("NftMinted", async () => {
+                    try {
+                        const tokenUri = await randomIpfsNft.tokenURI("0")
+                        const tokenCounter = await randomIpfsNft.getTokenCounter()
+                        assert.equal(tokenUri.toString().includes("ipfs://"), true)
+                        assert.equal(tokenCounter.toString(), "1")
+                        resolve()
+                    } catch (e) {
+                        console.log(e)
+                        reject(e)
+                    }
+                })
+                try {
+                    const fee = await randomIpfsNft.getMintFee()
+                    const requestNftResponse = await randomIpfsNft.requestNft({
+                        value: fee.toString(),
+                    })
+                    const requestNftReceipt = await requestNftResponse.wait(1)
+                    await vrfCoordinatorV2Mock.fulfillRandomWords(
+                        requestNftReceipt.events[1].args.requestId,
+                        randomIpfsNft.address
+                    )
+                } catch (e) {
+                    console.log(e)
+                    reject(e)
+                }
+            })
+        })
+    })
+    describe("getBreedFromModdedRng", () => {
+        it("should return pug if moddedRng < 10", async function () {
+            const expectedValue = await randomIpfsNft.getBreedFromModdedRng(7)
+            assert.equal(0, expectedValue)
+        })
+        it("should return shiba-inu if moddedRng is between 10 - 39", async function () {
+            const expectedValue = await randomIpfsNft.getBreedFromModdedRng(21)
+            assert.equal(1, expectedValue)
+        })
+        it("should return st. bernard if moddedRng is between 40 - 99", async function () {
+            const expectedValue = await randomIpfsNft.getBreedFromModdedRng(77)
+            assert.equal(2, expectedValue)
+        })
+        it("should revert if moddedRng > 99", async function () {
+            await expect(randomIpfsNft.getBreedFromModdedRng(100)).to.be.revertedWith(
+                "RandomIpfsNft__RangeOutOfBounds"
             )
         })
     })
