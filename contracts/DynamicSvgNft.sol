@@ -20,12 +20,19 @@ contract DynamicSvgNft is ERC721 {
     }
 
     function svgToImageURI(string memory svg) public pure returns (string memory) {
-        string memory svgBase64Encoded = Base64.encode(bytes(string(abi?encodePacked(svg))));
+        string memory svgBase64Encoded = Base64.encode(bytes(string(abi.encodePacked(svg))));
         return string(abi.encodePacked(base64EncodedSvgPrefix, svgBase64Encoded));
     }
 
     function mintNft() public {
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenCounter += s_tokenCounter;
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_exist(tokenId), "URI Query for nonexistent token");
+
+        // abi.encodePacked('{"name: "', name(), '", "description: "An NFT that changes based on the Chainlink Feed", ',
+        // "attributes": '');
     }
 }
