@@ -33,12 +33,20 @@ contract DynamicSvgNft is ERC721 {
         require(_exist(tokenId), "URI Query for nonexistent token");
         string memory imageURI = "hi!";
 
-        abi.encodePacked(
-            '{"name":"',
-            name(),
-            '", "description":"An NFT that changes based on the Chainlink Feed",  ',
-            '"attributes": [{"trait_type": "coolness", "value": 100}], "image":"',
-            imageURI
+        // data:image/svg+xml;base64 ==> this is the prefix for svg images
+        // data:application/json;base64 ==> prefix for base64 JSON
+
+        Base64.encode(
+            bytes(
+                abi.encodePacked(
+                    '{"name":"',
+                    name(),
+                    '", "description":"An NFT that changes based on the Chainlink Feed",  ',
+                    '"attributes": [{"trait_type": "coolness", "value": 100}], "image":"',
+                    imageURI,
+                    '"}'
+                )
+            )
         );
     }
 }
