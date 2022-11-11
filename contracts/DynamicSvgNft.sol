@@ -2,7 +2,7 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@base64-sol/base64.sol";
+import "base64-sol/base64.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract DynamicSvgNft is ERC721 {
@@ -16,6 +16,8 @@ contract DynamicSvgNft is ERC721 {
     string private constant base64EncodedSvgPrefix = "data:image/svg+xml;base64,";
     AggregatorV3Interface internal immutable i_priceFeed;
     mapping(uint256 => int256) public s_tokenIdToHighValues;
+
+    event CreatedNFT(uint256 indexed tokenId, int256 highValue);
 
     constructor(
         address priceFeedAddress,
@@ -35,8 +37,11 @@ contract DynamicSvgNft is ERC721 {
 
     function mintNft(int256 highValue) public {
         s_tokenIdToHighValues[s_tokenCounter] = highValue;
-        _safeMint(msg.sender, s_tokenCounter);
+        // ==> update token counter before the minting !
         s_tokenCounter = s_tokenCounter + 1;
+        _safeMint(msg.sender, s_tokenCounter);
+
+        emit CreatedNFT(s_tokenCounter, highValue);
     }
 
     function _baseURI() internal pure override returns (string memory) {
